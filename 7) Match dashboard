@@ -1,0 +1,39 @@
+import pandas as pd
+import numpy as np
+
+class MatchDashboard:
+    def __init__(self):
+        pass
+
+    def create_match_df(self,match_data:list)->pd.DataFrame:
+        df=pd.DataFrame(match_data,columns=["Team","Opponent","Result","Goals"])
+        return df
+
+    def team_goal_summary(self,df:pd.DataFrame)->pd.DataFrame:
+        summary=df.groupby("Team").agg(TotalGoals=("Goals","sum"),
+                                       AverageGoals=("Goals","mean")).reset_index()
+        summary.columns=["Team","Total Goals","Average Goals"]
+        return summary
+
+    def add_result_points(self,df:pd.DataFrame)->pd.DataFrame:
+        points_map={"Win":3,"Draw":1,"Loss":0}
+        df["Points"]=df["Result"].map(points_map)
+        return df
+
+    def filter_high_scoring(self,df:pd.DataFrame,n:int)->pd.DataFrame:
+        filtered=df[df["Goals"]>n].reset_index(drop=True)
+        return filtered
+
+    def compute_win_rate(self,df:pd.DataFrame)->pd.DataFrame:
+        total_matches=df.groupby("Team").size()
+        wins=df[df["Result"]=="Win"].groupby("Team").size()
+        win_rate=(wins/total_matches*100).fillna(0).round(1)
+        result=win_rate.reset_index()
+        result.columns=["Team","Win Rate"]
+        return result
+
+    def top_teams_by_points(self,df:pd.DataFrame,n:int)->pd.DataFrame:
+        summary=df.groupby("Team")["Points"].sum().reset_index()
+        summary.rename(columns={"Points":"Total Points"},inplace=True)
+        summary=summary.sort_values("Total Points",ascending=False).head(n)
+        return summary.reset_index(drop=True)
