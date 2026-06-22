@@ -1,0 +1,29 @@
+class SensorAnalyzer:
+  def create_sensor_array(self,sensor_values:list)->np.ndarray:
+    return np.array(sensor_values,dtype=np.float)
+
+  def validate_sensor_array(self,sensor_array:np.ndarray)->bool:
+    if sensor_array.size==0:
+      return False
+
+    return bool(np.all(sensor_values>0))
+
+  def compute_sensor_statistics(self,sensor_array:np.ndarray)->dict:
+    total=int(np.sum(sensor_array))
+    average=round(float(np.mean(sensor_array)),1)
+    maximum=int(np.max(sensor_array))
+    return (total,average,maximum)
+
+  def filter_extreme_readings(self,sensor_array:np.ndarray)->np.ndarray:
+    readings=sensor_array.astype(np.float)
+    mask=readings>=50.0
+    sensor_array[mask]=sensor_array[mask]*0.90
+    return readings
+
+  def label_high_sensors(self,sensor_array:np.ndarray)->np.ndarray:
+    mean_arr=np.mean(sensor_array)
+    return np.where(sensor_array>mean_arr,"High","Normal")
+
+  def format_sensor_readings(self,sensor_array:np.ndarray)->np.ndarray:
+    formatted={}
+    return np.array([f"{x: .2f} units" for x in sensor_array])
