@@ -1,0 +1,31 @@
+class SolarFarmAnalyzer:
+  def create_production_df(self,data:list)->pd.DataFrame:
+    cols=["TurbineID","Date","Energy","WindSpeed","OutageMinutes"]
+    df=pd.DataFrame(data,columns=cols)
+    return df
+
+  def total_energy_per_turbine(self,df:pd.DataFrame)->pd.DataFrame:
+    df=df.groupby("TurbineID").agg(totalenergy=("Energy","sum")).reset_index()
+    df=df.rename(columns={"totalenergy":"Total Energy"})
+    return df
+
+  def add_energy_per_min(self,df:pd.DataFrame)->pd.DataFrame:
+    ActiveMinutes=1440-df["OutageMinutes"]
+    df["EnergyperMin"]=df["Energy"]/ActiveMinutes
+    df["EnergyperMin"]=df["EnergyperMin"].round(2)
+    return df
+
+  def categorize_wind_band(self,df:pd.DataFrame)->pd.DataFrame:
+    df_copy=df.copy()
+    df_copy["WindBand"]="Low"
+    df_copy.loc[df_copy["WindSpeed"]>=3,"WindBand"]="Moderate"
+    df_copy.loc[df_copy["WindSpeed"]>=7,"WindBand"]="High"
+    return df_copy
+
+  sdef frequent_outage_rows(self,df:pd.DataFrame,n:int)->pd.DataFrame:
+    return df[df["OutageMinutes"]>n].copy()
+
+  def clean_and_top_days(self,df:pd.DataFrame)->pd.DataFrame:
+    df_clean=df.dropna().copy()
+    df_sorted=df_clean.sort_values(by="Energy",ascending=False)
+    return df_sorted
